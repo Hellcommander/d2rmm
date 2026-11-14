@@ -1,6 +1,6 @@
 # D2RMM Custom self-update
 
-The **Update D2RMM** button checks `yinyin333333/d2rmm` only when clicked. It
+The **Update D2RMM** button checks `Hellcommander/d2rmm` only when clicked. It
 selects the newest canonical numeric version, including GitHub prereleases
 (the repository publishes its current version as a prerelease). Releases marked
 `#alias`, drafts, older versions, and assets with different names are excluded.

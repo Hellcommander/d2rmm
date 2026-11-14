@@ -134,7 +134,7 @@ export function initAppUpdaterAPI(): void {
       try {
         await setStatus('checking');
         const response = await fetchUpdate(
-          'https://api.github.com/repos/yinyin333333/d2rmm/releases?per_page=100',
+          'https://api.github.com/repos/Hellcommander/d2rmm/releases?per_page=100',
           {
             headers: { Accept: 'application/vnd.github+json' },
             signal: updateRequestSignal(30000, controller.signal),

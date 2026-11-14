@@ -47,7 +47,7 @@ describe('release asset selection', () => {
     'D2RMM.Custom 1.9.8.zip',
   ])('accepts %s and preserves the original asset and download URL', (name) => {
     const candidate = release('1.9.8');
-    const url = `https://github.com/yinyin333333/d2rmm/releases/download/v1.9.8/${encodeURIComponent(name)}`;
+    const url = `https://github.com/Hellcommander/d2rmm/releases/download/v1.9.8/${encodeURIComponent(name)}`;
     const asset = { ...candidate.assets[0], name, browser_download_url: url };
     candidate.assets = [asset];
 

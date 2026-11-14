@@ -33,7 +33,7 @@ afterEach(async () => {
 const asset = {
   name: 'D2RMM.Custom.1.1.0.zip',
   browser_download_url:
-    'https://github.com/yinyin333333/d2rmm/releases/download/v1.1.0/update.zip',
+    'https://github.com/Hellcommander/d2rmm/releases/download/v1.1.0/update.zip',
   size: 100,
 };
 

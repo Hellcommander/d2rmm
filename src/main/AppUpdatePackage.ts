@@ -78,7 +78,7 @@ export async function downloadPackage(
   const url = new URL(asset.browser_download_url);
   if (
     url.origin !== 'https://github.com' ||
-    !url.pathname.startsWith('/yinyin333333/d2rmm/releases/download/') ||
+    !url.pathname.startsWith('/Hellcommander/d2rmm/releases/download/') ||
     !Number.isSafeInteger(asset.size) ||
     asset.size <= 0 ||
     asset.size > 1024 ** 3

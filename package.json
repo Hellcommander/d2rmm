@@ -106,7 +106,7 @@
     "afterAllArtifactBuild": "./.erb/scripts/verify-update-artifacts.js",
     "publish": {
       "provider": "github",
-      "owner": "yinyin333333",
+      "owner": "Hellcommander",
       "repo": "d2rmm"
     }
   },
