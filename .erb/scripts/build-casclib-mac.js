@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const cascLibDir = path.join(root, 'node_modules', 'CascLib');
+const cascLibDir = require('./fetch-casclib')();
 const buildDir = path.join(cascLibDir, 'build');
 const outputDylib = path.join(root, 'tools', 'CascLib.dylib');
 

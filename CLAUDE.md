@@ -18,7 +18,7 @@ yarn build:updater  # Build auto-updater binaries (requires pkg)
 yarn build:casclib  # Build CascLib native module (requires node-gyp)
 ```
 
-> CI uses `npm` (not yarn), despite `yarn.lock`. Local dev uses `yarn`. Node v22 required.
+> CI uses `npm` (not yarn), despite `yarn.lock`. Local dev uses `yarn`. Node v26 required (npm 12 refuses git dependencies, so CascLib is cloned by `.erb/scripts/fetch-casclib.js` when it is built).
 
 > **Local machine config** (shell, paths, tools): see @.claude/local.md
 

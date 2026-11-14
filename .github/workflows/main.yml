@@ -79,16 +79,14 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           architecture: 'x64'
 
       - name: Install MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      # GitHub git dependencies don't work in GitHub Action workflows,
-      # so we remove CascLib from package.json and clone it manually instead.
-      - name: Remove CascLib from package.json
-        run: npm remove CascLib --force
+      # CascLib is not an npm dependency (npm 12 refuses git dependencies); it is cloned below
+      # (the build scripts would clone ladislav-zezula/CascLib otherwise).
 
       - name: Install dependencies
         run: npm install
@@ -117,12 +115,10 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
 
-      # GitHub git dependencies don't work in GitHub Action workflows,
-      # so we remove CascLib from package.json and clone it manually instead.
-      - name: Remove CascLib from package.json
-        run: npm remove CascLib --force
+      # CascLib is not an npm dependency (npm 12 refuses git dependencies); it is cloned below
+      # (the build scripts would clone ladislav-zezula/CascLib otherwise).
 
       - name: Install dependencies
         run: npm install
@@ -151,12 +147,10 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
 
-      # GitHub git dependencies don't work in GitHub Action workflows,
-      # so we remove CascLib from package.json and clone it manually instead.
-      - name: Remove CascLib from package.json
-        run: npm remove CascLib --force
+      # CascLib is not an npm dependency (npm 12 refuses git dependencies); it is cloned below
+      # (the build scripts would clone ladislav-zezula/CascLib otherwise).
 
       - name: Install dependencies
         run: npm install
@@ -452,7 +446,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
 
       # GitHub dependencies don't work in GitHub Action workflows...
       - name: Remove CascLib dependency

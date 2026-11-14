@@ -34,7 +34,7 @@ You can find some example mods over at [https://github.com/olegbl/d2rmm.mods](ht
 ## Building
 
 - [https://github.com/nodejs/node-gyp#on-windows](https://github.com/nodejs/node-gyp#on-windows)
-- D2RMM uses Node v22 by default, so make sure to install that (e.g. via nvm).
+- D2RMM uses Node v26, so make sure to install that (e.g. via nvm). CascLib is cloned into `node_modules/CascLib` by the build scripts (npm 12 no longer installs git dependencies).
 - `git clone`
 - `cd d2rmm`
 - `yarn install`

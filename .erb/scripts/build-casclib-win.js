@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const cascLibDir = path.join(root, 'node_modules', 'CascLib');
+const cascLibDir = require('./fetch-casclib')();
 const vcxproj = path.join(cascLibDir, 'CascLib_dll.vcxproj');
 const builtDll = path.join(
   cascLibDir,
@@ -27,7 +27,7 @@ const builtDll = path.join(
 const outputDll = path.join(root, 'tools', 'CascLib.dll');
 
 // Maps VS major version → MSBuild platform toolset
-const VS_TOOLSET = { 17: 'v143', 16: 'v142', 15: 'v141' };
+const VS_TOOLSET = { 18: 'v145', 17: 'v143', 16: 'v142', 15: 'v141' };
 
 function getMSBuildInfo() {
   // Prefer PATH — works in CI after microsoft/setup-msbuild sets it up.

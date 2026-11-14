@@ -50,7 +50,9 @@ export const D2R_LOADER_PACKAGE_MANIFEST = 'manifest.json';
 const PACKAGE_SOURCE_DIRECTORY = 'source';
 const MANAGED_PACKAGE_OPERATION = 'D2RMM managed D2RLoader package';
 const PACKAGE_RESOURCE_LIMITS: ResourceLimits = {
-  maxBytes: 512 * 1024 * 1024,
+  // Local change: 512 MiB stopped big packages (shattered mod ~1.1 GB); same value as the
+  // toolkit's Set-D2rmmLimit patch for release builds.
+  maxBytes: 4_000_000_000,
   maxDepth: 64,
   maxEntries: 10_000,
 };
