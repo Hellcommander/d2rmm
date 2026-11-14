@@ -1,7 +1,6 @@
 import BridgeAPI from 'renderer/BridgeAPI';
 import { useAsyncMemo } from 'renderer/react/hooks/useAsyncMemo';
 import useSavedState from 'renderer/react/hooks/useSavedState';
-import resolvePath from 'renderer/utils/resolvePath';
 import React, { useCallback, useContext, useMemo } from 'react';
 
 type ISanitizedPath = string;
@@ -44,10 +43,7 @@ export function GamePathContextProvider({ children }: Props): JSX.Element {
     useCallback(() => BridgeAPI.getGamePath(), []),
   );
 
-  const path =
-    savedPath ??
-    registryGamePath ??
-    '';
+  const path = savedPath ?? registryGamePath ?? '';
 
   const sanitizedPath = path.replace(/\\$/, '');
 

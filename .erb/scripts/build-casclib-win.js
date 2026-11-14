@@ -74,6 +74,20 @@ function getMSBuildInfo() {
   return { msbuild: `"${msbuildPath}"`, platformToolset };
 }
 
+// CascLib's DllMain.rc includes the MFC header afxres.h, which is missing when the C++ Build Tools
+// are installed without MFC. winres.h from the Windows SDK has everything the resource script uses.
+const rcFile = path.join(cascLibDir, 'src', 'DllMain.rc');
+if (fs.existsSync(rcFile)) {
+  const rc = fs.readFileSync(rcFile, 'latin1');
+  if (rc.includes('#include "afxres.h"')) {
+    fs.writeFileSync(
+      rcFile,
+      rc.replace('#include "afxres.h"', '#include <winres.h>'),
+      'latin1',
+    );
+  }
+}
+
 const { msbuild, platformToolset } = getMSBuildInfo();
 const toolsetArg = platformToolset ? ` /p:PlatformToolset=${platformToolset}` : '';
 console.log(

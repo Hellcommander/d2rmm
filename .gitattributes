@@ -15,3 +15,5 @@
 *.ttf   binary
 *.woff  binary
 *.woff2 binary
+# D2RLoader prerequisite tables ship byte-exact with CRLF, like the game's excel files.
+assets/d2rloader-prerequisites/*.txt text eol=crlf

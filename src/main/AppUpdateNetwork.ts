@@ -1,8 +1,9 @@
+import { app, net } from 'electron';
+
 export async function fetchUpdate(
   url: string,
   options: RequestInit,
 ): Promise<Response> {
-  const { app, net } = await import('electron');
   await app.whenReady();
   options.signal?.throwIfAborted();
   return net.fetch(url, options);

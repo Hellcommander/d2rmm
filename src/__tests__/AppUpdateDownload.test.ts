@@ -5,6 +5,18 @@ import { ReadableStream } from 'stream/web';
 import { transferableAbortController } from 'util';
 import { downloadPackage } from '../main/AppUpdatePackage';
 
+// fetchUpdate uses Electron's net.fetch; route it to the mocked global.
+jest.mock(
+  'electron',
+  () => ({
+    app: { whenReady: () => Promise.resolve() },
+    net: {
+      fetch: (...args: Parameters<typeof fetch>) => global.fetch(...args),
+    },
+  }),
+  { virtual: true },
+);
+
 const originalSignal = global.AbortSignal;
 const originalFetch = global.fetch;
 let temporary: string;

@@ -29,7 +29,9 @@ jest.mock('source-map', () => ({
 
 jest.mock('main/worker/quickjs', () => ({
   getQuickJS: () => ({
-    newContext: () => mockCreateQuickJSContext(),
+    newRuntime: () => ({
+      newContext: () => mockCreateQuickJSContext(),
+    }),
   }),
   getQuickJSProxyAPI: () => mockGetQuickJSProxyAPI(),
   installQuickJSExecutionWatchdog: (...args: unknown[]) =>

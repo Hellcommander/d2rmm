@@ -2196,7 +2196,10 @@ const config = JSON.parse(D2RMM.getConfigJSON());
         try {
           os.setPriority(os.constants.priority.PRIORITY_NORMAL);
         } catch (error) {
-          console.debug('Failed to restore process priority after install', error);
+          console.debug(
+            'Failed to restore process priority after install',
+            error,
+          );
         }
       }
       try {
