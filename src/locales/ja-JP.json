@@ -1,5 +1,5 @@
 {
-  "app.dropZone": ".zipをドロップしてMODをインストール",
+  "app.dropZone": ".zipまたは.7zをドロップしてMODをインストール",
   "appUpdate.close": "閉じる",
   "appUpdate.description": "プレビュー版を含む最新の Windows 版をインストールします。D2RMM は終了後に再起動します。MOD、プラグイン、設定、インストール済みのゲームファイルは保持されます。",
   "appUpdate.install": "バージョン {{version}} に更新して再起動",

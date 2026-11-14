@@ -1,5 +1,5 @@
 {
-  "app.dropZone": ".zip 파일을 드롭하여 MOD 설치",
+  "app.dropZone": ".zip 또는 .7z 파일을 드롭하여 MOD 설치",
   "appUpdate.close": "닫기",
   "appUpdate.description": "미리 보기 릴리스를 포함한 최신 Windows 버전을 설치합니다. D2RMM이 종료된 뒤 재실행됩니다. 모드, 플러그인, 설정 및 게임에 설치한 파일은 유지됩니다.",
   "appUpdate.install": "{{version}} 버전으로 업데이트 후 재실행",

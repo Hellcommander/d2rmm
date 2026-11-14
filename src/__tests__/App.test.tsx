@@ -15,7 +15,7 @@ const mockState = {
   importPluginSources: jest.fn(),
   installD2RLoader: jest.fn(),
   installMods: jest.fn(),
-  installModFromZip: jest.fn(),
+  installModFromArchive: jest.fn(),
   openExternal: jest.fn(),
   readD2RLoaderConfig: jest.fn(),
   readModConfig: jest.fn(),
@@ -51,8 +51,8 @@ jest.mock('renderer/IPC', () => ({
             if (api === 'installD2RLoader') {
               return mockState.installD2RLoader(...args);
             }
-            if (api === 'installModFromZip') {
-              return mockState.installModFromZip(...args);
+            if (api === 'installModFromArchive') {
+              return mockState.installModFromArchive(...args);
             }
             if (api === 'importSources') {
               return mockState.importPluginSources(...args);
@@ -113,7 +113,7 @@ describe('App', () => {
       version: '1.0.1.0',
     });
     mockState.installMods.mockResolvedValue(undefined);
-    mockState.installModFromZip.mockResolvedValue(undefined);
+    mockState.installModFromArchive.mockResolvedValue(undefined);
     mockState.importPluginSources.mockResolvedValue({
       importedFiles: 1,
       packages: ['Example'],
@@ -330,7 +330,7 @@ describe('App', () => {
     'shows exclusive drop-install feedback and restores actions after %s',
     async (outcome) => {
       let settleInstall: () => void = () => {};
-      mockState.installModFromZip.mockImplementationOnce(
+      mockState.installModFromArchive.mockImplementationOnce(
         () =>
           new Promise<void>((resolve, reject) => {
             settleInstall = () =>
@@ -359,7 +359,7 @@ describe('App', () => {
       drop();
       if (outcome === 'resolve') drop();
 
-      expect(mockState.installModFromZip).toHaveBeenCalledTimes(1);
+      expect(mockState.installModFromArchive).toHaveBeenCalledTimes(1);
       const progressLabel = screen.getByText('Installing Large.zip (1/1)');
       expect(progressLabel).toBeInTheDocument();
       expect(progressLabel).toHaveAttribute(
@@ -472,7 +472,7 @@ describe('App', () => {
         'C:\\Dropped\\Example.zip',
       ]),
     );
-    expect(mockState.installModFromZip).not.toHaveBeenCalled();
+    expect(mockState.installModFromArchive).not.toHaveBeenCalled();
   });
 
   it('preserves loose companion files dropped with a plugin DLL', async () => {
@@ -672,7 +672,7 @@ describe('App', () => {
 
   it('blocks loader actions in the opposite direction while another operation owns the lock', async () => {
     let resolveDropInstall: () => void = () => {};
-    mockState.installModFromZip.mockImplementationOnce(
+    mockState.installModFromArchive.mockImplementationOnce(
       () =>
         new Promise<void>((resolve) => {
           resolveDropInstall = resolve;

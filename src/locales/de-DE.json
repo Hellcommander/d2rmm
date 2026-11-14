@@ -1,5 +1,5 @@
 {
-  "app.dropZone": ".zip hier ablegen, um Mod zu installieren",
+  "app.dropZone": ".zip oder .7z hier ablegen, um Mod zu installieren",
   "appUpdate.close": "Schließen",
   "appUpdate.description": "Installiert die neueste Windows-Version einschließlich Vorschauversionen. D2RMM wird beendet und neu gestartet. Mods, Plugins, Einstellungen und installierte Spieldateien bleiben erhalten.",
   "appUpdate.install": "Auf Version {{version}} aktualisieren und neu starten",

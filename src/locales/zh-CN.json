@@ -1,5 +1,5 @@
 {
-  "app.dropZone": "拖放 .zip 文件以安装模组",
+  "app.dropZone": "拖放 .zip 或 .7z 文件以安装模组",
   "appUpdate.close": "关闭",
   "appUpdate.description": "安装最新的 Windows 版本，包括预览版。D2RMM 将关闭并重新启动。模组、插件、设置和已安装的游戏文件将予以保留。",
   "appUpdate.install": "更新到 {{version}} 并重新启动",
