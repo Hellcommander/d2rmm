@@ -1,0 +1,8 @@
+# BEGIN LOCAL-AGENT-BRIDGE
+CortexIDE is running as a coding agent via Local Agent Bridge.
+- Use Agent mode tools for any real work. Do not stop after a few calls. Call attempt_completion when done.
+- Skills are slash-commands under .cortexide/skills (40 synced). Read a matching SKILL.md before following it.
+- Canvases are .canvas.tsx files (42 found). Use the canvas skill before writing one.
+- MCP server local-agent-bridge exposes list_skills, read_skill, match_skills, list_canvases, read_canvas, import_cursor_chat, list_imported_chats.
+- Imported Cursor chats are in .cortexide/imported-chats. Continue them in Agent mode; do not answer as an instructor.
+# END LOCAL-AGENT-BRIDGE
