@@ -13,6 +13,10 @@ const mockInstallQuickJSExecutionWatchdog = jest.fn((_runtime?: unknown) => ({
   refresh: jest.fn(),
 }));
 
+// no real process scan (tasklist) during tests
+jest.mock('main/worker/GameProcessGuard', () => ({
+  findRunningGameProcesses: jest.fn().mockResolvedValue([]),
+}));
 jest.mock('quickjs-emscripten', () => ({
   Scope: jest.fn(() => ({
     dispose: mockScopeDispose,
@@ -28,8 +32,13 @@ jest.mock('source-map', () => ({
 }));
 
 jest.mock('main/worker/quickjs', () => ({
+  // BridgeAPI creates a runtime per mod (getQuickJS().newRuntime()) and a
+  // context in it, so both are disposed after the mod
   getQuickJS: () => ({
-    newContext: () => mockCreateQuickJSContext(),
+    newRuntime: () => ({
+      newContext: () => mockCreateQuickJSContext(),
+      dispose: jest.fn(),
+    }),
   }),
   getQuickJSProxyAPI: () => mockGetQuickJSProxyAPI(),
   installQuickJSExecutionWatchdog: (...args: unknown[]) =>

@@ -18,7 +18,7 @@ yarn build:updater  # Build auto-updater binaries (requires pkg)
 yarn build:casclib  # Build CascLib native module (requires node-gyp)
 ```
 
-> CI uses `npm` (not yarn), despite `yarn.lock`. Local dev uses `yarn`. Node v26 required (npm 12 refuses git dependencies, so CascLib is cloned by `.erb/scripts/fetch-casclib.js` when it is built).
+> CI uses `npm` (not yarn), despite `yarn.lock`. Local dev uses `yarn`. Node v26 required (npm 12 refuses git dependencies, so CascLib is cloned by `.erb/scripts/fetch-casclib.js` when it is built). npm 12 also blocks dependency install scripts not listed in `package.json` `allowScripts` (`npm install-scripts ls|approve|deny`), and postinstall runs `.erb/scripts/ensure-electron.js` because Electron's own unzip stops early under Node 26.
 
 > **Local machine config** (shell, paths, tools): see @.claude/local.md
 

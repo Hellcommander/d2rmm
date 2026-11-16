@@ -14,8 +14,17 @@ import { freezeForUpdate, provideAPI } from '../main/IPC';
 jest.mock(
   'electron',
   () => ({
-    app: { isPackaged: true, getVersion: () => '1.0.0' },
+    app: {
+      isPackaged: true,
+      getVersion: () => '1.0.0',
+      whenReady: () => Promise.resolve(),
+    },
     BrowserWindow: { getAllWindows: () => [] },
+    // AppUpdateNetwork fetches through Electron's net; route it to the
+    // test's global.fetch
+    net: {
+      fetch: (...args: Parameters<typeof fetch>) => global.fetch(...args),
+    },
   }),
   { virtual: true },
 );
@@ -94,7 +103,13 @@ windows('Windows update cancellation and handoff', () => {
       });
     });
     const checking = api.check();
-    await Promise.resolve();
+    // asserted below; keeps a failed assertion from turning into an
+    // unhandled rejection that ends the whole test process
+    checking.catch(() => undefined);
+    // the request goes through Electron's net after app.whenReady()
+    while ((global.fetch as jest.Mock).mock.calls.length === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
     expect(isAppUpdateBusy()).toBe(false);
     await api.cancel();
     expect(signal.aborted).toBe(true);

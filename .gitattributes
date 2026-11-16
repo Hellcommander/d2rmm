@@ -15,3 +15,5 @@
 *.ttf   binary
 *.woff  binary
 *.woff2 binary
+# prepared game tables ship with the game's CRLF line endings (their hashes are checked)
+assets/d2rloader-prerequisites/*.txt text eol=crlf
