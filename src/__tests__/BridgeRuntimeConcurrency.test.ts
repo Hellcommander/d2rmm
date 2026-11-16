@@ -5,6 +5,10 @@ import { BridgeAPI, getRuntime } from '../main/worker/BridgeAPI';
 const mockEventSend = jest.fn().mockResolvedValue(undefined);
 const mockWriteD2S = jest.fn();
 
+// no real process scan (tasklist) during tests
+jest.mock('main/worker/GameProcessGuard', () => ({
+  findRunningGameProcesses: jest.fn().mockResolvedValue([]),
+}));
 jest.mock('main/worker/AppInfoAPI', () => ({
   getAppPath: () => 'C:\\D2RMM-F04-FAKE\\app',
   getBaseSavesPath: () => 'C:\\D2RMM-F04-FAKE\\base-saves',

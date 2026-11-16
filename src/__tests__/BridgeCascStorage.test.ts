@@ -21,6 +21,10 @@ const mockGetLastCascLibError = jest.fn(
   (errorCode?: number) => `mock CASC error ${errorCode ?? 5}`,
 );
 
+// no real process scan (tasklist) during tests
+jest.mock('main/worker/GameProcessGuard', () => ({
+  findRunningGameProcesses: jest.fn().mockResolvedValue([]),
+}));
 jest.mock('main/worker/AppInfoAPI', () => ({
   getAppPath: () => 'C:\\D2RMM-F18-FAKE\\app',
   getBaseSavesPath: () => 'C:\\D2RMM-F18-FAKE\\base-saves',

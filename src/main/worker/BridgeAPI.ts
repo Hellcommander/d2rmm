@@ -64,12 +64,14 @@ import { InstallationRuntime } from './InstallationRuntime';
 import { encodeJson, parseJson } from './JSONParser';
 import { getDataModRootPath, getModAPI } from './ModAPI';
 import { runModTransaction } from './ModTransaction';
+import { findOutputBinTables } from './OutputBinTables';
 import { removeLegacyOutputOwnershipManifest } from './OutputOwnership';
 import {
   getModOutputEnvelopePath,
   resolveModOutputPath,
   resolvePathInsideRoot,
 } from './PathSafety';
+import { findRunningGameProcesses } from './GameProcessGuard';
 import { launchDetachedProcess } from './ProcessLauncher';
 import {
   RuntimeOperationBusyError,
@@ -1899,6 +1901,17 @@ const config = JSON.parse(D2RMM.getConfigJSON());
         );
       } catch {}
 
+      // The output is deleted and rewritten; with the game running its open
+      // plugin DLLs make that fail half way and leave the output empty.
+      if (!runtime.options.isDryRun) {
+        const running = await findRunningGameProcesses();
+        if (running.length > 0) {
+          throw te('worker.error.gameRunning', {
+            processes: running.join(', '),
+          });
+        }
+      }
+
       // try to prevent background throttling during installation (upstream)
       if (process.platform === 'win32') {
         try {
@@ -2121,11 +2134,30 @@ const config = JSON.parse(D2RMM.getConfigJSON());
             2,
           ),
         );
-        // write all modified files to disk
-        for (const {
-          filePath,
-          data,
-        } of runtime.fileManager.getModifiedFiles()) {
+        // write all modified files to disk (without compiled tables that
+        // would hide the .txt the mods wrote, see OutputBinTables)
+        const modifiedFiles = runtime.fileManager.getModifiedFiles();
+        const { skip: skippedBins, kept: keptBins } = findOutputBinTables(
+          modifiedFiles.map((file) => file.filePath),
+        );
+        if (skippedBins.length > 0) {
+          console.warn(
+            tl('worker.install.binRemoved', {
+              count: skippedBins.length,
+              files: skippedBins.join(', '),
+            }),
+          );
+        }
+        if (keptBins.length > 0) {
+          console.warn(
+            tl('worker.install.binKept', { files: keptBins.join(', ') }),
+          );
+        }
+        const skippedBinSet = new Set(skippedBins);
+        for (const { filePath, data } of modifiedFiles) {
+          if (skippedBinSet.has(filePath)) {
+            continue;
+          }
           const destPath = resolveModOutputPath(runtime.options, filePath);
           mkdirSync(path.dirname(destPath), { recursive: true });
           writeFileSync(destPath, data);

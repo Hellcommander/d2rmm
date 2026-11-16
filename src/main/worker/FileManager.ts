@@ -1,6 +1,10 @@
 import path from 'path';
 import { isModPluginDisabled } from 'shared/D2RLoaderPluginPreferences';
 import { tl } from '../../shared/i18n';
+import {
+  isD2RLoaderModConfigPath,
+  mergeD2RLoaderToml,
+} from './D2RLoaderTomlMerge';
 import { InstallationRuntime } from './InstallationRuntime';
 
 export type FileOperationType = 'extract' | 'read' | 'write';
@@ -175,12 +179,61 @@ export class FileManager {
       return;
     const fileStatus = this.get(filePath);
     this.rememberForRollback(fileStatus.filePath);
-    fileStatus.data = data;
+    fileStatus.data = this.mergeWithEarlierMods(fileStatus, data);
     fileStatus.exists = true;
+  }
+
+  // Several mods may each ship a mod-level d2rloader.toml. Instead of the
+  // last one silently replacing the others, merge them (D2RLoaderTomlMerge).
+  private mergeWithEarlierMods(fileStatus: FileStatus, data: Buffer): Buffer {
+    if (
+      fileStatus.data == null ||
+      !this.runtime.isModInstalling() ||
+      !isD2RLoaderModConfigPath(fileStatus.filePath)
+    ) {
+      return data;
+    }
+    const modID = this.runtime.mod.id;
+    const earlierMods = [
+      ...new Set(
+        fileStatus.operations
+          .filter((op) => op.type === 'write' && op.mod !== modID)
+          .map((op) => op.mod),
+      ),
+    ];
+    if (earlierMods.length === 0) {
+      return data;
+    }
+    const { text, notes } = mergeD2RLoaderToml(
+      fileStatus.data.toString('utf8'),
+      data.toString('utf8'),
+    );
+    if (notes.length > 0) {
+      this.runtime.console.log(
+        tl('worker.fileManager.d2rloaderTomlMerged', {
+          mod: modID,
+          mods: earlierMods.join(', '),
+          filePath: fileStatus.filePath,
+          notes: notes.join('; '),
+        }),
+      );
+    }
+    return Buffer.from(text, 'utf8');
   }
 
   public getData(filePath: string): Buffer | null {
     return this.get(filePath).data;
+  }
+
+  // The mods that wrote this file during the current install, in order.
+  public writers(filePath: string): string[] {
+    return [
+      ...new Set(
+        this.get(filePath)
+          .operations.filter((op) => op.type === 'write')
+          .map((op) => op.mod),
+      ),
+    ];
   }
 
   private isPluginDisabled(filePath: string, modID: string): boolean {

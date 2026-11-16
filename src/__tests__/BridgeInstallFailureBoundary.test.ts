@@ -7,6 +7,10 @@ const mockApplyD2RLoaderPrerequisites = jest.fn().mockResolvedValue(undefined);
 const mockApplyManagedD2RLoaderPackages = jest.fn().mockResolvedValue([]);
 const mockClearD2RLoaderOutputDirectory = jest.fn().mockResolvedValue(null);
 
+// no real process scan (tasklist) during tests
+jest.mock('main/worker/GameProcessGuard', () => ({
+  findRunningGameProcesses: jest.fn().mockResolvedValue([]),
+}));
 jest.mock('main/worker/AppInfoAPI', () => ({
   getAppPath: () => 'C:\\D2RMM-F05-FAKE\\app',
   getBaseSavesPath: () => 'C:\\D2RMM-F05-FAKE\\base-saves',
