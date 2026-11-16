@@ -25,7 +25,11 @@ let consoleError: jest.SpyInstance;
 
 jest.mock('renderer/BridgeAPI', () => ({
   __esModule: true,
-  default: { installMods: (...args: unknown[]) => mockInstallMods(...args) },
+  default: {
+    installMods: (...args: unknown[]) => mockInstallMods(...args),
+    getInstallFingerprint: () =>
+      Promise.resolve({ fingerprint: 'fp-1', outputExists: true }),
+  },
 }));
 
 jest.mock('renderer/react/context/D2RLoaderPluginContext', () => ({
@@ -251,6 +255,21 @@ describe('useInstallMods installation results', () => {
     );
     expect(mockSetTab).not.toHaveBeenCalled();
     expectInstallingRestored();
+    // Run D2R may skip the next install while nothing changes
+    expect(localStorage.getItem('installed-fingerprint')).toBe('fp-1');
+  });
+
+  it('forgets the install fingerprint after a partial or failed install', async () => {
+    localStorage.setItem('installed-fingerprint', 'old');
+    mockModsToInstall = [makeMod('A'), makeMod('B')];
+    mockInstallMods.mockResolvedValue(['A']);
+    await invokeInstallMods(renderUseInstallMods());
+    expect(localStorage.getItem('installed-fingerprint')).toBeNull();
+
+    localStorage.setItem('installed-fingerprint', 'old');
+    mockInstallMods.mockRejectedValue(new Error('install failed'));
+    await invokeInstallMods(renderUseInstallMods());
+    expect(localStorage.getItem('installed-fingerprint')).toBeNull();
   });
 
   it('treats zero selected mods as a no-op success without clearing the snapshot', async () => {

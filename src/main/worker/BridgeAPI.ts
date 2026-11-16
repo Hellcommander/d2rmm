@@ -72,6 +72,7 @@ import {
   resolvePathInsideRoot,
 } from './PathSafety';
 import { findRunningGameProcesses } from './GameProcessGuard';
+import { computeInstallFingerprint } from './InstallFingerprint';
 import { launchDetachedProcess } from './ProcessLauncher';
 import {
   RuntimeOperationBusyError,
@@ -497,6 +498,14 @@ export const BridgeAPI: IBridgeAPI = {
     } finally {
       lease.release();
     }
+  },
+
+  getInstallFingerprint: async (
+    modIDs: string[],
+    options: IInstallModsOptions,
+  ) => {
+    console.debug('BridgeAPI.getInstallFingerprint', { mods: modIDs.length });
+    return computeInstallFingerprint(getAppPath(), modIDs, options);
   },
 
   getGamePath: async () => {

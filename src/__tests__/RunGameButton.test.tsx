@@ -4,7 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 const mockExecute = jest.fn();
 const mockPrepareD2RLoaderLaunch = jest.fn();
 const mockInstallMods = jest.fn();
+const mockCheckInstallUpToDate = jest.fn();
 const mockShowToast = jest.fn();
+let mockIsInstallConfigChanged = false;
 let mockInstallBeforeRun = false;
 let mockHasUnsavedEdits = false;
 let mockIsDeploymentChanged = false;
@@ -59,7 +61,7 @@ jest.mock('renderer/react/context/InstallContext', () => ({
 }));
 
 jest.mock('renderer/react/context/ModsContext', () => ({
-  useIsInstallConfigChanged: () => false,
+  useIsInstallConfigChanged: () => mockIsInstallConfigChanged,
   useIsLoadingMods: () => mockIsLoadingMods,
 }));
 
@@ -69,10 +71,11 @@ jest.mock('renderer/react/context/OutputModNameContext', () => ({
 
 jest.mock('renderer/react/hooks/useGameLaunchArgs', () => () => []);
 jest.mock('renderer/react/hooks/useToast', () => () => mockShowToast);
-jest.mock(
-  'renderer/react/modlist/hooks/useInstallMods',
-  () => () => mockInstallMods,
-);
+jest.mock('renderer/react/modlist/hooks/useInstallMods', () => ({
+  __esModule: true,
+  default: () => mockInstallMods,
+  useCheckInstallUpToDate: () => mockCheckInstallUpToDate,
+}));
 
 describe('RunGameButton launch failures', () => {
   beforeEach(() => {
@@ -90,6 +93,44 @@ describe('RunGameButton launch failures', () => {
     mockExecute.mockResolvedValue(0);
     mockPrepareD2RLoaderLaunch.mockResolvedValue(undefined);
     mockInstallMods.mockResolvedValue(true);
+    mockCheckInstallUpToDate.mockResolvedValue(false);
+    mockIsInstallConfigChanged = false;
+  });
+
+  it('launches without installing again when the mods are already installed', async () => {
+    mockInstallBeforeRun = true;
+    mockCheckInstallUpToDate.mockResolvedValue(true);
+    render(<RunGameButton />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Run D2R' }));
+
+    await waitFor(() => expect(mockExecute).toHaveBeenCalledTimes(1));
+    expect(mockCheckInstallUpToDate).toHaveBeenCalledTimes(1);
+    expect(mockInstallMods).not.toHaveBeenCalled();
+  });
+
+  it('installs first when mod files or the game changed since the last install', async () => {
+    mockInstallBeforeRun = true;
+    mockCheckInstallUpToDate.mockResolvedValue(false);
+    render(<RunGameButton />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Run D2R' }));
+
+    await waitFor(() => expect(mockExecute).toHaveBeenCalledTimes(1));
+    expect(mockInstallMods).toHaveBeenCalledTimes(1);
+  });
+
+  it('installs first when the mod list or settings changed, without fingerprinting', async () => {
+    mockInstallBeforeRun = true;
+    mockIsInstallConfigChanged = true;
+    mockCheckInstallUpToDate.mockResolvedValue(true);
+    render(<RunGameButton />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Run D2R' }));
+
+    await waitFor(() => expect(mockExecute).toHaveBeenCalledTimes(1));
+    expect(mockInstallMods).toHaveBeenCalledTimes(1);
+    expect(mockCheckInstallUpToDate).not.toHaveBeenCalled();
   });
 
   it('catches execute rejection and shows exactly one error toast', async () => {

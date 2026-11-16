@@ -1,5 +1,12 @@
-import type { IInstallModsOptions } from 'bridge/BridgeAPI';
+import type {
+  IInstallModsOptions,
+  InstallFingerprint,
+} from 'bridge/BridgeAPI';
 import BridgeAPI from 'renderer/BridgeAPI';
+import {
+  getInstalledFingerprint,
+  setInstalledFingerprint,
+} from 'renderer/InstalledFingerprint';
 import { useD2RLoaderPluginManager } from 'renderer/react/context/D2RLoaderPluginContext';
 import { useD2RLoaderSettings } from 'renderer/react/context/D2RLoaderSettingsContext';
 import { useSanitizedGamePath } from 'renderer/react/context/GamePathContext';
@@ -18,14 +25,13 @@ import { useFinalSavesPath } from 'renderer/react/context/SavesPathContext';
 import { useTabState } from 'renderer/react/context/TabContext';
 import useToast from 'renderer/react/hooks/useToast';
 import { localizeConsoleArgs } from 'shared/i18n';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function useInstallMods(): () => Promise<boolean> {
   const { t } = useTranslation();
   const showToast = useToast();
   const {
-    disabledSources,
     hasUnsavedEdits = false,
     isDeploymentChanged,
     isInventoryCurrent = true,
@@ -35,17 +41,11 @@ export default function useInstallMods(): () => Promise<boolean> {
     markOutputModeInstalled,
   } = useD2RLoaderPluginManager();
   const [d2rLoaderSettings] = useD2RLoaderSettings();
-  const gamePath = useSanitizedGamePath();
-  const [isPreExtractedData] = useIsPreExtractedData();
-  const [preExtractedDataPath] = usePreExtractedDataPath();
-  const [outputModName] = useOutputModName();
-  const [normalizeOutputCRLF] = useNormalizeCRLFOnInstall();
-  const outputPath = useOutputPath();
+  const baseOptions = useInstallModsOptions();
   const logger = useLogger();
   const modsToInstall = useModsToInstall();
   const [, setInstalledMods] = useInstalledMods();
   const { finishOperation, tryStartOperation } = useInstallationOperation();
-  const savesPath = useFinalSavesPath();
 
   const [, setTab] = useTabState();
 
@@ -74,20 +74,26 @@ export default function useInstallMods(): () => Promise<boolean> {
       logger.clear();
 
       const options: IInstallModsOptions = {
-        gamePath,
-        isDryRun: false,
-        useD2RLoader: d2rLoaderSettings.useD2RLoader,
-        disabledD2RLoaderSources: disabledSources,
-        isPreExtractedData,
-        mergedPath: outputPath,
-        normalizeOutputCRLF,
-        outputModName,
-        preExtractedDataPath,
-        savesPath,
+        ...baseOptions,
         syncD2RLoaderOutput:
           isOutputModeChanged ||
           (d2rLoaderSettings.useD2RLoader && isDeploymentChanged),
       };
+
+      // what the install reads besides the mod list and settings, taken
+      // before it starts (a change during the install shows up next time)
+      let fingerprint: InstallFingerprint | null = null;
+      try {
+        fingerprint = await BridgeAPI.getInstallFingerprint(
+          modsToInstall.map((mod) => mod.id),
+          options,
+        );
+      } catch (error) {
+        console.debug('Could not fingerprint the install', error);
+      }
+      // the output is about to be rewritten: until this install succeeds,
+      // Run D2R must not treat it as up to date
+      setInstalledFingerprint(null);
 
       console.debug(`Installing mods...`, options);
       const installedModIDs = await BridgeAPI.installMods(
@@ -118,6 +124,7 @@ export default function useInstallMods(): () => Promise<boolean> {
       if (modsToInstall.length === 0) {
         if (didApplyOutputMode) {
           setInstalledMods([]);
+          setInstalledFingerprint(fingerprint?.fingerprint ?? null);
         }
         showToast({
           severity: 'success',
@@ -141,6 +148,11 @@ export default function useInstallMods(): () => Promise<boolean> {
       setInstalledMods(
         installedMods.map((mod) => ({ id: mod.id, config: mod.config })),
       );
+      // a partial install stays "changed" (installed-mods lacks the failed
+      // mods), so only a complete one records the fingerprint
+      if (installedMods.length === modsToInstall.length) {
+        setInstalledFingerprint(fingerprint?.fingerprint ?? null);
+      }
       showToast({
         severity:
           installedMods.length < modsToInstall.length ? 'warning' : 'success',
@@ -164,11 +176,9 @@ export default function useInstallMods(): () => Promise<boolean> {
       finishOperation(operationToken);
     }
   }, [
-    disabledSources,
+    baseOptions,
     d2rLoaderSettings.useD2RLoader,
-    gamePath,
     hasUnsavedEdits,
-    isPreExtractedData,
     isDeploymentChanged,
     isInventoryCurrent,
     isOutputModeChanged,
@@ -177,11 +187,6 @@ export default function useInstallMods(): () => Promise<boolean> {
     markDeploymentOutdated,
     markOutputModeInstalled,
     modsToInstall,
-    normalizeOutputCRLF,
-    outputModName,
-    outputPath,
-    preExtractedDataPath,
-    savesPath,
     setInstalledMods,
     finishOperation,
     setTab,
@@ -189,4 +194,68 @@ export default function useInstallMods(): () => Promise<boolean> {
     t,
     tryStartOperation,
   ]);
+}
+
+// The install options that describe the output (everything but the one-off
+// output sync request), shared by the install and the Run D2R check.
+export function useInstallModsOptions(): IInstallModsOptions {
+  const { disabledSources } = useD2RLoaderPluginManager();
+  const [d2rLoaderSettings] = useD2RLoaderSettings();
+  const gamePath = useSanitizedGamePath();
+  const [isPreExtractedData] = useIsPreExtractedData();
+  const [preExtractedDataPath] = usePreExtractedDataPath();
+  const [outputModName] = useOutputModName();
+  const [normalizeOutputCRLF] = useNormalizeCRLFOnInstall();
+  const outputPath = useOutputPath();
+  const savesPath = useFinalSavesPath();
+  return useMemo(
+    () => ({
+      gamePath,
+      isDryRun: false,
+      useD2RLoader: d2rLoaderSettings.useD2RLoader,
+      disabledD2RLoaderSources: disabledSources,
+      isPreExtractedData,
+      mergedPath: outputPath,
+      normalizeOutputCRLF,
+      outputModName,
+      preExtractedDataPath,
+      savesPath,
+    }),
+    [
+      d2rLoaderSettings.useD2RLoader,
+      disabledSources,
+      gamePath,
+      isPreExtractedData,
+      normalizeOutputCRLF,
+      outputModName,
+      outputPath,
+      preExtractedDataPath,
+      savesPath,
+    ],
+  );
+}
+
+// True when installing again would produce the same output: the mods' files,
+// the game executables and the options are unchanged since the last complete
+// install, and its output is still there. (Mod list and settings are compared
+// separately through installed-mods.)
+export function useCheckInstallUpToDate(): () => Promise<boolean> {
+  const options = useInstallModsOptions();
+  const modsToInstall = useModsToInstall();
+  return useCallback(async (): Promise<boolean> => {
+    const saved = getInstalledFingerprint();
+    if (saved == null) {
+      return false;
+    }
+    try {
+      const current = await BridgeAPI.getInstallFingerprint(
+        modsToInstall.map((mod) => mod.id),
+        options,
+      );
+      return current.outputExists && current.fingerprint === saved;
+    } catch (error) {
+      console.debug('Could not fingerprint the install', error);
+      return false;
+    }
+  }, [modsToInstall, options]);
 }

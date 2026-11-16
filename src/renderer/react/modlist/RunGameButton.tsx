@@ -15,7 +15,9 @@ import { useOutputModName } from 'renderer/react/context/OutputModNameContext';
 import useAsyncCallback from 'renderer/react/hooks/useAsyncCallback';
 import useGameLaunchArgs from 'renderer/react/hooks/useGameLaunchArgs';
 import useToast from 'renderer/react/hooks/useToast';
-import useInstallMods from 'renderer/react/modlist/hooks/useInstallMods';
+import useInstallMods, {
+  useCheckInstallUpToDate,
+} from 'renderer/react/modlist/hooks/useInstallMods';
 import resolvePath from 'renderer/utils/resolvePath';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -80,6 +82,7 @@ export default function RunGameButton(_props: Props): JSX.Element {
           : '';
 
   const onInstallMods = useInstallMods();
+  const checkInstallUpToDate = useCheckInstallUpToDate();
 
   const onPress = useAsyncCallback(async () => {
     if (
@@ -92,7 +95,16 @@ export default function RunGameButton(_props: Props): JSX.Element {
     }
 
     if (isInstallBeforeRunEnabled) {
-      if (!(await onInstallMods())) {
+      // install only when it would change something: a pending change in
+      // the mod list, settings or D2RLoader plugins, or changed mod files,
+      // game files or options since the last complete install
+      const isUpToDate =
+        !hasPendingInstallation && (await checkInstallUpToDate());
+      if (isUpToDate) {
+        console.log(
+          'Mods are already installed; launching without reinstalling.',
+        );
+      } else if (!(await onInstallMods())) {
         return;
       }
     }
@@ -118,6 +130,8 @@ export default function RunGameButton(_props: Props): JSX.Element {
     }
   }, [
     isInstallBeforeRunEnabled,
+    hasPendingInstallation,
+    checkInstallUpToDate,
     onInstallMods,
     d2rLoaderSettings,
     gamePath,

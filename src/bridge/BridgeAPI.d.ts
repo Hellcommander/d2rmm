@@ -64,6 +64,12 @@ export type Mod = {
   config: ModConfigValue;
 };
 
+/** What an install reads besides the mod list and settings (InstallFingerprint.ts). */
+export type InstallFingerprint = {
+  fingerprint: string;
+  outputExists: boolean;
+};
+
 export type CopiedFile = {
   fromPath: string;
   toPath: string;
@@ -85,6 +91,10 @@ export type IBridgeAPI = {
   extractFileToMemory: (filePath: string) => Promise<Buffer>;
   getAppPath: () => Promise<string>;
   getGamePath: () => Promise<string | null>;
+  getInstallFingerprint: (
+    modIDs: string[],
+    options: IInstallModsOptions,
+  ) => Promise<InstallFingerprint>;
   getVersion: () => Promise<[number, number, number]>;
   readD2SData: (options: IInstallModsOptions) => Promise<{
     characters: { [fileName: string]: ID2S };
