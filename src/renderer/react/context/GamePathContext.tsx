@@ -1,7 +1,6 @@
 import BridgeAPI from 'renderer/BridgeAPI';
 import { useAsyncMemo } from 'renderer/react/hooks/useAsyncMemo';
 import useSavedState from 'renderer/react/hooks/useSavedState';
-import resolvePath from 'renderer/utils/resolvePath';
 import React, { useCallback, useContext, useMemo } from 'react';
 
 type ISanitizedPath = string;
